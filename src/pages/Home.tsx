@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Calendar from "../components/Calendar";
 import TimeSelect from "../components/TimeSelect";
+import { createEvent } from "../services/eventService";
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -9,9 +10,17 @@ export default function Home() {
   const [timezone, setTimezone] = useState(userTimezone);
   const [timeFrom, setTimeFrom] = useState("08:00");
   const [timeTo, setTimeTo] = useState("17:00");
+  const [eventName, setEventName] = useState("");
 
-  function handleSubmit() {
-    console.log({ selected, timezone, timeFrom, timeTo });
+  async function handleSubmit() {
+    const data = await createEvent({
+      name: eventName || "My Event",
+      dates: selected || [],
+      timezone,
+      timeFrom,
+      timeTo
+    });
+    console.log(data);
   }
 
   return (
@@ -19,7 +28,9 @@ export default function Home() {
       <input
         className="bg-white text-lg py-2 px-3 rounded-md"
         type="text"
-        placeholder="When to what?"
+        placeholder="Event name"
+        value={eventName}
+        onChange={(e) => setEventName(e.target.value)}
       />
       <div className="flex flex-row items-center justify-center gap-8">
         <Calendar selected={selected} onSelect={setSelected} />
