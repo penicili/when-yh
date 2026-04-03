@@ -2,6 +2,7 @@ import { useState } from "react";
 import Calendar from "../components/Calendar";
 import TimeSelect from "../components/TimeSelect";
 import { createEvent } from "../services/eventService";
+import Swal from "sweetalert2";
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -13,14 +14,27 @@ export default function Home() {
   const [eventName, setEventName] = useState("");
 
   async function handleSubmit() {
-    const data = await createEvent({
-      name: eventName || "My Event",
-      dates: selected || [],
-      timezone,
-      timeFrom,
-      timeTo
-    });
-    console.log(data);
+    try {
+      const data = await createEvent({
+        name: eventName || "My Event",
+        dates: selected || [],
+        timezone,
+        timeFrom,
+        timeTo,
+      });
+      console.log(data);
+      Swal.fire(
+        "Event Created!",
+        "Your event has been created successfully.",
+        "success",
+      );
+    } catch (error) {
+      Swal.fire(
+        "Error!",
+        `There was an error creating the event. ${error}`,
+        "error"
+      );
+    }
   }
 
   return (
