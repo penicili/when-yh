@@ -3,13 +3,13 @@ import Navbar from './Navbar'
 
 export default function Layout() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-primary/5 text-slate-800">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 bg-primary-dark">
         <Outlet />
       </main>
-      <footer className="text-center py-6 border-t border-gray-200 text-sm text-gray-400">
-        <p>&copy; 2026 WhenYh. Built with React + Vite.</p>
+      <footer className="border-t border-primary/10 py-6 text-center text-sm text-accent-warm bg-primary-dark">
+        <p>&copy; {new Date().getFullYear()} WhenYh. Brought to you by penicili.</p>
       </footer>
     </div>
   )
