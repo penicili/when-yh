@@ -7,3 +7,39 @@
   --color-accent: #F3BE7A;
   --color-accent-warm: #F08D39;
 }
+
+.rdp-root {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1rem;
+  width: fit-content;
+  --rdp-accent-color: #3852B4;
+  --rdp-accent-background-color: #F3BE7A33;
+  --rdp-today-color: #F08D39;
+  --rdp-day_button-border-radius: 8px;
+  --rdp-selected-border: 2px solid #3852B4;
+  --rdp-range_middle-background-color: #F3BE7A22;
+  --rdp-range_middle-color: #3852B4;
+  --rdp-range_start-background: #3852B4;
+  --rdp-range_start-color: #fff;
+  --rdp-range_end-background: #3852B4;
+  --rdp-range_end-color: #fff;
+}
+
+/* Selected day */
+.rdp-selected .rdp-day_button {
+  background-color: #3852B4;
+  color: #ffffff;
+}
+
+/* Hover on unselected day */
+.rdp-day_button:hover:not(.rdp-selected .rdp-day_button) {
+  background-color: #F3BE7A33;
+  color: #3852B4;
+}
+
+/* Today */
+.rdp-today .rdp-day_button {
+  font-weight: 700;
+  color: #F08D39;
+}

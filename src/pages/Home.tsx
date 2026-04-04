@@ -1,15 +1,14 @@
-import { DayPicker } from "react-day-picker";
-import { useState } from "react";
-
+import { useOutletContext } from "react-router-dom";
+import { useEffect } from "react";
 export default function Home() {
-  const [selected, setSelected] = useState<Date | undefined>(undefined);
+  // Set page title
+  const { setTitle } = useOutletContext<{
+    setTitle: (title: string) => void;
+  }>();
+  useEffect(() => {
+    setTitle("WhenYH - Home");
+  }, [setTitle]);
   return (
-    <DayPicker
-      animate
-      mode="single"
-      selected={selected}
-      onSelect={setSelected}
-      footer={selected ? <p>Selected date: {selected.toLocaleDateString()}</p> : undefined}
-    />
+    <div className="flex flex-col items-center justify-center gap-12"></div>
   );
 }
