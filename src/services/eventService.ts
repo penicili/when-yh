@@ -1,14 +1,8 @@
 import { supabase } from '../../utils/supabase'
+import type { Event, CreateEventPayload } from '../types/EventType'
 
-export type CreateEventPayload = {
-  name: string
-  dates: Date[]
-  timezone: string
-  timeFrom: string
-  timeTo: string
-}
 
-export async function createEvent(payload: CreateEventPayload) {
+export async function createEvent(payload: CreateEventPayload) {  
   const { data, error } = await supabase
     .from('events')
     .insert({
@@ -25,7 +19,7 @@ export async function createEvent(payload: CreateEventPayload) {
   return data
 }
 
-export async function getEvent(id: string) {
+export async function getEvent(id: string): Promise<Event> {
   const { data, error } = await supabase
     .from('events')
     .select()

@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Calendar from "../components/Calendar";
 import TimeSelect from "../components/TimeSelect";
 import { createEvent } from "../services/eventService";
 import Swal from "sweetalert2";
+import { useOutletContext } from "react-router-dom";
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export default function NewEvent() {
+  // Set page title
+  const { setTitle } = useOutletContext<{
+    setTitle: (title: string) => void;
+  }>();
+  useEffect(() => {
+    setTitle("Create New Event");
+  }, [setTitle]);
+
   const navigate = useNavigate();
+  // States buat data yang dibutuhin buat create event
   const [selected, setSelected] = useState<Date[] | undefined>(undefined);
   const [timezone, setTimezone] = useState(userTimezone);
   const [timeFrom, setTimeFrom] = useState("08:00");
@@ -21,6 +31,7 @@ export default function NewEvent() {
       return;
     }
     try {
+      // panggil service
       const data = await createEvent({
         name: eventName || "My Event",
         dates: selected || [],
@@ -38,7 +49,7 @@ export default function NewEvent() {
       Swal.fire(
         "Error!",
         `There was an error creating the event. ${error}`,
-        "error"
+        "error",
       );
     }
   }
