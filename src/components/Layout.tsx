@@ -1,16 +1,17 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useMatch } from "react-router-dom";
 import Navbar from "./Navbar";
 
 const pageTitles: Record<string, string> = {
-  "/": "Create New Event",
+  "/": "WhenYH - Home",
   "/newEvent": "Create New Event",
   "/my-blocking": "My Blocking",
   "/shifts": "Assign Shifts",
 };
 
 export default function Layout() {
+  const eventMatch = useMatch("/event/:id");
   const { pathname } = useLocation();
-  const title = pageTitles[pathname] ?? "WhenYh";
+  const title = pageTitles[pathname] ?? (eventMatch ? `Event Details` : "WhenYh");
 
   return (
     <div className="flex min-h-screen flex-col bg-primary/5 text-slate-800">
@@ -20,9 +21,10 @@ export default function Layout() {
         <Outlet />
       </main>
       <footer className="border-t border-primary/10 py-6 text-center text-sm text-accent-warm bg-primary-dark">
-        <p>
-          &copy; {new Date().getFullYear()} WhenYh. Brought to you by penicili.
-        </p>
+        <span>
+          WhenYh. Brought to you by 
+        </span>
+        <a href="https://github.com/penicili/when-yh" target="_blank"> penicili</a>
       </footer>
     </div>
   );

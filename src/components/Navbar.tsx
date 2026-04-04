@@ -11,9 +11,9 @@ export default function Navbar() {
           <NavLink
             to="/newEvent"
             className={({ isActive }) =>
-              `inline-flex px-3 py-1.5 rounded-md font-medium transition-colors ${
+              `inline-flex px-3 py-1.5 font-medium transition-colors ${
                 isActive
-                  ? "bg-accent text-primary"
+                  ? "border-b-2 border-accent text-white"
                   : "text-white/80 hover:bg-accent/20 hover:text-accent"
               }`
             }
@@ -21,18 +21,18 @@ export default function Navbar() {
             New Event
           </NavLink>
           <NavLink to="/my-blocking" className={({ isActive }) =>
-            `inline-flex px-3 py-1.5 rounded-md font-medium transition-colors ${
+            `inline-flex px-3 py-1.5 font-medium transition-colors ${
               isActive
-                ? "bg-accent text-primary"
+                ? "border-b-2 border-accent text-white"
                 : "text-white/80 hover:bg-accent/20 hover:text-accent"
             }`
           }>
             My Blocking
           </NavLink>
           <NavLink to="/shifts" className={({ isActive }) =>
-            `inline-flex px-3 py-1.5 rounded-md font-medium transition-colors ${
+            `inline-flex px-3 py-1.5 font-medium transition-colors ${
               isActive
-                ? "bg-accent text-primary"
+                ? "border-b-2 border-accent text-white"
                 : "text-white/80 hover:bg-accent/20 hover:text-accent"
             }`
           }>
