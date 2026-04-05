@@ -1,13 +1,14 @@
 import { useParams } from "react-router-dom";
 import { getEvent } from "../services/eventService";
 import Swal from "sweetalert2";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import type { Event } from "../types/EventType";
 import { useOutletContext } from "react-router-dom";
 import TimeBlocking from "../components/TimeBlocking";
 import TeamTimeBlocking from "../components/TeamTimeBlocking";
 import { getEventAvailability } from "../services/availabilityService";
 import type { UserAvailability } from "../types/BlockingType";
+import { DateTime } from "luxon";
 
 export default function EventPage() {
   // Function buat submit user data (username & timezone)
@@ -28,6 +29,15 @@ export default function EventPage() {
   const [userName, setUserName] = useState<string>("");
   const [isUserSubmitted, setIsUserSubmitted] = useState<boolean>(false);
   const [availabilities, setAvailabilities] = useState<UserAvailability[]>([]);
+
+  // Konversi time_from/time_to dari UTC ke timezone yang dipilih user
+  const convertedEvent = useMemo<Event | null>(() => {
+    if (!event) return null;
+    const refDate = event.dates[0];
+    const timeFrom = DateTime.fromISO(`${refDate}T${event.time_from}Z`).setZone(timezone).toFormat("HH:mm");
+    const timeTo = DateTime.fromISO(`${refDate}T${event.time_to}Z`).setZone(timezone).toFormat("HH:mm");
+    return { ...event, time_from: timeFrom, time_to: timeTo, timezone };
+  }, [event, timezone]);
 
   // Set page title
   const { setTitle } = useOutletContext<{
@@ -124,12 +134,12 @@ export default function EventPage() {
       {isUserSubmitted && (
         <div className="bg-white rounded-lg p-4">
           <p className="text-gray-500 text-lg">{userName}'s Availability</p>
-          <TimeBlocking event={event} isSelectable={isUserSubmitted} username={userName} timezone={timezone} />
+          <TimeBlocking event={convertedEvent} isSelectable={isUserSubmitted} username={userName} timezone={timezone} />
         </div>
       )}
-      {event&& (
+      {convertedEvent && (
         <div className="bg-white rounded-lg p-4">
-          <TeamTimeBlocking event={event} availabilities={availabilities}/>
+          <TeamTimeBlocking event={convertedEvent} availabilities={availabilities}/>
         </div>
       )}
     </div>

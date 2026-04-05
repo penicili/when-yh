@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Event } from "../types/EventType";
 
 type UserAvailability = {
@@ -67,9 +67,26 @@ export default function TeamTimeBlocking({ event, availabilities }: Props) {
     y: number;
   } | null>(null);
 
-  const slots = generateSlots(event.time_from, event.time_to);
-  const dates = [...event.dates].sort();
+  const slots = useMemo(() => generateSlots(event.time_from, event.time_to), [event.time_from, event.time_to]);
+  const dates = useMemo(() => [...event.dates].sort(), [event.dates]);
   const totalUsers = availabilities.length;
+
+  // Pre-compute UTC key tiap cell — hanya dihitung ulang saat event berubah, bukan tiap mouse move
+  const utcKeyMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const date of dates) {
+      for (const time of slots) {
+        map.set(`${date}_${time}`, slotToUTC(date, time, event.timezone));
+      }
+    }
+    return map;
+  }, [dates, slots, event.timezone]);
+
+  // Pre-compute Set per user untuk O(1) lookup (vs .includes() yang O(n))
+  const availabilitySets = useMemo(
+    () => availabilities.map((u) => ({ username: u.username, set: new Set(u.availability) })),
+    [availabilities],
+  );
 
   return (
     <div className="bg-white rounded-lg p-4 overflow-auto select-none">
@@ -95,13 +112,9 @@ export default function TeamTimeBlocking({ event, availabilities }: Props) {
                     {time}
                   </td>
                   {dates.map((date) => {
-                    const utcKey = slotToUTC(date, time, event.timezone);
-                    const available = availabilities.filter((u) =>
-                      u.availability.includes(utcKey),
-                    );
-                    const unavailable = availabilities.filter(
-                      (u) => !u.availability.includes(utcKey),
-                    );
+                    const utcKey = utcKeyMap.get(`${date}_${time}`)!;
+                    const available = availabilitySets.filter((u) => u.set.has(utcKey));
+                    const unavailable = availabilitySets.filter((u) => !u.set.has(utcKey));
                     const isAllAvailable = totalUsers > 0 && available.length === totalUsers;
 
                     return (
