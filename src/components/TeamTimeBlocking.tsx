@@ -78,16 +78,16 @@ export default function TeamTimeBlocking({ event, availabilities }: Props) {
   );
 
   return (
-    <div className="bg-white rounded-lg p-4 overflow-auto select-none">
+    <div className="bg-white rounded-lg overflow-auto select-none">
       <div className="relative">
-          <table className="border-collapse text-sm">
+          <table className="border-collapse text-xs">
             <thead>
               <tr>
-                <th className="px-2 py-1 text-gray-400 font-normal"></th>
+                <th className="px-1.5 py-0.5 text-gray-400 font-normal"></th>
                 {dates.map((d) => (
                   <th
                     key={d}
-                    className="px-2 py-1 text-center text-xs font-medium text-gray-600 min-w-16"
+                    className="px-1.5 py-0.5 text-center text-xs font-medium text-gray-600 min-w-12"
                   >
                     {formatDate(d)}
                   </th>
@@ -97,7 +97,7 @@ export default function TeamTimeBlocking({ event, availabilities }: Props) {
             <tbody>
               {slots.map((time) => (
                 <tr key={time}>
-                  <td className="pr-2 text-right text-xs text-gray-400 whitespace-nowrap">
+                  <td className="pr-1.5 text-right text-xs text-gray-400 whitespace-nowrap">
                     {time}
                   </td>
                   {dates.map((date) => {
@@ -107,7 +107,7 @@ export default function TeamTimeBlocking({ event, availabilities }: Props) {
                     return (
                       <td
                         key={date}
-                        className={`border border-gray-100 h-6 cursor-default transition-colors ${cellColor(available.length, totalUsers)}`}
+                        className={`border border-gray-100 h-4 cursor-default transition-colors ${cellColor(available.length, totalUsers)}`}
                         onMouseEnter={(e) => {
                           if (totalUsers === 0) return;
                           setTooltip({

@@ -63,7 +63,7 @@ export default function TimeBlocking({ event, username, timezone, initialBlocked
 
   return (
     <div
-      className="bg-white rounded-lg p-4 overflow-auto select-none"
+      className="bg-white rounded-lg overflow-auto select-none"
       onMouseLeave={() => {
         isDragging.current = false;
       }}
@@ -77,15 +77,15 @@ export default function TimeBlocking({ event, username, timezone, initialBlocked
           const slots = generateSlots(event.time_from, event.time_to);
           const dates = [...event.dates].sort();
           return (
-            <table className="border-collapse text-sm">
+            <table className="border-collapse text-xs">
               <thead>
                 <tr>
-                  <th className="px-2 py-1 text-gray-400 font-normal"></th>
+                  <th className="px-1.5 py-0.5 text-gray-400 font-normal"></th>
                   {/* X-axis: Dates */}
                   {dates.map((d) => (
                     <th
                       key={d}
-                      className="px-2 py-1 text-center text-xs font-medium text-gray-600 min-w-16"
+                      className="px-1.5 py-0.5 text-center text-xs font-medium text-gray-600 min-w-12"
                     >
                       {formatDate(d)}
                     </th>
@@ -96,7 +96,7 @@ export default function TimeBlocking({ event, username, timezone, initialBlocked
                 {/* Y-axis: Time slots dari generateSlots */}
                 {slots.map((time) => (
                   <tr key={time}>
-                    <td className="pr-2 text-right text-xs text-gray-400 whitespace-nowrap">
+                    <td className="pr-1.5 text-right text-xs text-gray-400 whitespace-nowrap">
                       {time}
                     </td>
                     {dates.map((date) => {
@@ -105,7 +105,7 @@ export default function TimeBlocking({ event, username, timezone, initialBlocked
                       return (
                         <td
                           key={date}
-                          className={`border border-gray-100 h-6 cursor-pointer transition-colors ${
+                          className={`border border-gray-100 h-4 cursor-pointer transition-colors ${
                             isBlocked
                               ? "bg-primary"
                               : "bg-white hover:bg-primary/20"
