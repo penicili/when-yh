@@ -3,10 +3,10 @@ import AppNavLink from "./AppNavLink";
 
 export default function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-primary/15 bg-primary px-6 py-4 text-white shadow-lg shadow-primary/10">
+    <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-primary/15 bg-primary px-4 py-2.5 text-white shadow-lg shadow-primary/10">
       <NavLink
         to="/"
-        className="text-xl font-bold text-accent transition-colors hover:text-accent-warm"
+        className="text-base font-bold text-accent transition-colors hover:text-accent-warm"
       >
         WhenYh
       </NavLink>

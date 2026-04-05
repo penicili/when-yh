@@ -55,17 +55,17 @@ export default function NewEvent() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-12">
+    <div className="flex flex-col items-center justify-center gap-6">
       <input
-        className="bg-white text-lg py-2 px-3 rounded-md"
+        className="bg-white text-base py-1.5 px-3 rounded-md"
         type="text"
         placeholder="My Event"
         value={eventName}
         onChange={(e) => setEventName(e.target.value)}
       />
-      <div className="flex flex-row items-center justify-center gap-8">
+      <div className="flex flex-row items-center justify-center gap-6">
         <Calendar selected={selected} onSelect={setSelected} />
-        <div className="flex flex-col bg-white self-stretch rounded-lg p-6 shadow-md">
+        <div className="flex flex-col bg-white self-stretch rounded-lg p-4 shadow-md">
           <TimeSelect
             timezone={timezone}
             timeFrom={timeFrom}

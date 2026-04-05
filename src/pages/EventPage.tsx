@@ -112,24 +112,24 @@ export default function EventPage() {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <div className="flex flex-row items-start justify-center gap-12">
+    <div className="flex flex-row items-start justify-center gap-8">
       {!isUserSubmitted && (
-        <div className="flex flex-row items-start justify-center gap-12">
+        <div className="flex flex-row items-start justify-center gap-8">
           {/* Bagian kiri: Username input, select timezone */}
-          <div className="bg-white rounded-lg p-4">
+          <div className="bg-white rounded-lg p-3">
             <div className="flex flex-col">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="username" className="text-sm mb-1">Username</label>
               <input
                 type="text"
                 id="username"
                 placeholder="Username"
-                className="mb-2 bg-white rounded-md p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-warm"
+                className="mb-2 bg-white rounded-md p-1.5 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-warm"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
               />
-              <label htmlFor="timezone">Timezone</label>
+              <label htmlFor="timezone" className="text-sm mb-1">Timezone</label>
               <select
-                className="mb-2 bg-white rounded-md p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-warm"
+                className="mb-2 bg-white rounded-md p-1.5 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-warm"
                 name="timezone"
                 id="timezone"
                 value={timezone}
@@ -146,7 +146,7 @@ export default function EventPage() {
               </p>
               <button
                 onClick={handeSubmitUserData}
-                className="self-end bg-primary text-white font-semibold py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="self-end bg-primary text-white font-semibold py-1.5 px-3 text-sm rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
                 Submit
               </button>
@@ -157,8 +157,8 @@ export default function EventPage() {
       )}
       {/* time blocking buat dipilih */}
       {isUserSubmitted && (
-        <div className="bg-white rounded-lg p-4">
-          <p className="text-gray-500 text-lg">{userName}'s Availability</p>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-gray-500 text-base mb-2">{userName}'s Availability</p>
           <TimeBlocking
             key={initialBlocked.size}
             event={convertedEvent}
@@ -189,8 +189,8 @@ export default function EventPage() {
         </div>
       )}
       {convertedEvent && (
-        <div className="bg-white rounded-lg p-4">
-          <p className="text-gray-500 text-lg">Summary</p>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-gray-500 text-base mb-2">Summary</p>
           <TeamTimeBlocking
             event={convertedEvent}
             availabilities={availabilities}
