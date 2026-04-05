@@ -1,24 +1,16 @@
 import { useParams } from "react-router-dom";
 import { getEvent } from "../services/eventService";
 import Swal from "sweetalert2";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import type { Event } from "../types/EventType";
 import { useOutletContext } from "react-router-dom";
 import TimeBlocking from "../components/TimeBlocking";
 import TeamTimeBlocking from "../components/TeamTimeBlocking";
 import { getEventAvailability } from "../services/availabilityService";
 import type { UserAvailability } from "../types/BlockingType";
+import { DateTime } from "luxon";
 
 export default function EventPage() {
-  // Function buat submit user data (username & timezone)
-  async function handeSubmitUserData() {
-    if (!userName.trim()) {
-      Swal.fire("Oops!", "Please enter a username.", "warning");
-      return;
-    }
-    setIsUserSubmitted(true);
-  }
-  // States dan variables bawaan
   const timezones = Intl.supportedValuesOf("timeZone");
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<Event | null>(null);
@@ -28,6 +20,50 @@ export default function EventPage() {
   const [userName, setUserName] = useState<string>("");
   const [isUserSubmitted, setIsUserSubmitted] = useState<boolean>(false);
   const [availabilities, setAvailabilities] = useState<UserAvailability[]>([]);
+
+  // Baca username dari localStorage saat pertama load
+  useEffect(() => {
+    const saved = localStorage.getItem("whenYH_username");
+    if (saved) {
+      setUserName(saved);
+      setIsUserSubmitted(true);
+    }
+  }, []);
+
+  // Submit: simpan username ke localStorage
+  async function handeSubmitUserData() {
+    if (!userName.trim()) {
+      Swal.fire("Oops!", "Please enter a username.", "warning");
+      return;
+    }
+    localStorage.setItem("whenYH_username", userName);
+    setIsUserSubmitted(true);
+  }
+
+  // Pre-fill blocked cells dari availability user yang sudah tersimpan
+  const initialBlocked = useMemo(() => {
+    const userAvail = availabilities.find((a) => a.username === userName);
+    if (!userAvail) return new Set<string>();
+    const blocked = new Set<string>();
+    for (const utcISO of userAvail.availability) {
+      const dt = DateTime.fromISO(utcISO).setZone(timezone);
+      blocked.add(`${dt.toISODate()}_${dt.toFormat("HH:mm")}`);
+    }
+    return blocked;
+  }, [availabilities, userName, timezone]);
+
+  // Konversi time_from/time_to dari UTC ke timezone yang dipilih user
+  const convertedEvent = useMemo<Event | null>(() => {
+    if (!event) return null;
+    const refDate = event.dates[0];
+    const timeFrom = DateTime.fromISO(`${refDate}T${event.time_from}Z`)
+      .setZone(timezone)
+      .toFormat("HH:mm");
+    const timeTo = DateTime.fromISO(`${refDate}T${event.time_to}Z`)
+      .setZone(timezone)
+      .toFormat("HH:mm");
+    return { ...event, time_from: timeFrom, time_to: timeTo, timezone };
+  }, [event, timezone]);
 
   // Set page title
   const { setTitle } = useOutletContext<{
@@ -67,7 +103,6 @@ export default function EventPage() {
       }
     }
 
-
     if (id) {
       fetchEvent();
       fetchAvailability();
@@ -75,7 +110,6 @@ export default function EventPage() {
   }, [id]);
   if (!id) return <p>Event ID is required</p>;
   if (loading) return <p>Loading...</p>;
-
 
   return (
     <div className="flex flex-row items-start justify-center gap-12">
@@ -90,6 +124,7 @@ export default function EventPage() {
                 id="username"
                 placeholder="Username"
                 className="mb-2 bg-white rounded-md p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-warm"
+                value={userName}
                 onChange={(e) => setUserName(e.target.value)}
               />
               <label htmlFor="timezone">Timezone</label>
@@ -124,12 +159,42 @@ export default function EventPage() {
       {isUserSubmitted && (
         <div className="bg-white rounded-lg p-4">
           <p className="text-gray-500 text-lg">{userName}'s Availability</p>
-          <TimeBlocking event={event} isSelectable={isUserSubmitted} username={userName} timezone={timezone} />
+          <TimeBlocking
+            key={initialBlocked.size}
+            event={convertedEvent}
+            isSelectable={isUserSubmitted}
+            username={userName}
+            timezone={timezone}
+            initialBlocked={initialBlocked}
+            onAvailabilityChange={(utcSlots) =>
+              setAvailabilities((prev) => {
+                const existing = prev.find((a) => a.username === userName);
+                const updated = existing
+                  ? { ...existing, availability: utcSlots }
+                  : {
+                      availId: "",
+                      event_id: id!,
+                      username: userName,
+                      timezone,
+                      availability: utcSlots,
+                      updated_at: "",
+                    };
+                return [
+                  ...prev.filter((a) => a.username !== userName),
+                  updated,
+                ];
+              })
+            }
+          />
         </div>
       )}
-      {event&& (
+      {convertedEvent && (
         <div className="bg-white rounded-lg p-4">
-          <TeamTimeBlocking event={event} availabilities={availabilities}/>
+          <p className="text-gray-500 text-lg">Summary</p>
+          <TeamTimeBlocking
+            event={convertedEvent}
+            availabilities={availabilities}
+          />
         </div>
       )}
     </div>

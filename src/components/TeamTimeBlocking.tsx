@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { DateTime } from "luxon";
 import type { Event } from "../types/EventType";
 
 type UserAvailability = {
@@ -37,26 +38,13 @@ function formatDate(iso: string): string {
 
 // Konversi slot (date ISO + "HH:mm" + timezone) ke UTC ISO string untuk perbandingan
 function slotToUTC(dateISO: string, time: string, timezone: string): string {
-  const [h, m] = time.split(":").map(Number);
-  const dateStr = new Date(dateISO).toLocaleDateString("en-CA", {
-    timeZone: timezone,
-  });
-  const asUTC = new Date(
-    `${dateStr}T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00Z`,
-  );
-  const inTz = new Date(asUTC.toLocaleString("en-US", { timeZone: timezone }));
-  const diff = asUTC.getTime() - inTz.getTime();
-  return new Date(asUTC.getTime() + diff).toISOString();
+  return DateTime.fromISO(`${dateISO}T${time}`, { zone: timezone }).toUTC().toISO()!;
 }
 
-// Warna cell berdasarkan berapa persen user yang available
 function cellColor(available: number, total: number): string {
   if (total === 0 || available === 0) return "bg-white";
   if (available === total) return "bg-primary";
-  const ratio = available / total;
-  if (ratio >= 0.75) return "bg-primary/75";
-  if (ratio >= 0.5) return "bg-primary/50";
-  return "bg-primary/25";
+  return "bg-primary/50";
 }
 
 export default function TeamTimeBlocking({ event, availabilities }: Props) {
@@ -67,9 +55,27 @@ export default function TeamTimeBlocking({ event, availabilities }: Props) {
     y: number;
   } | null>(null);
 
-  const slots = generateSlots(event.time_from, event.time_to);
-  const dates = [...event.dates].sort();
+  // Itung jumlah slot dan tanggal, pake useMemo biar gak re render
+  const slots = useMemo(() => generateSlots(event.time_from, event.time_to), [event.time_from, event.time_to]);
+  const dates = useMemo(() => [...event.dates].sort(), [event.dates]);
   const totalUsers = availabilities.length;
+
+  // Pre-compute UTC key tiap cell — hanya dihitung ulang saat event berubah, bukan tiap mouse move
+  const utcKeyMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const date of dates) {
+      for (const time of slots) {
+        map.set(`${date}_${time}`, slotToUTC(date, time, event.timezone));
+      }
+    }
+    return map;
+  }, [dates, slots, event.timezone]);
+
+  // Pre-compute Set per user untuk O(1) lookup (vs .includes() yang O(n))
+  const availabilitySets = useMemo(
+    () => availabilities.map((u) => ({ username: u.username, set: new Set(u.availability) })),
+    [availabilities],
+  );
 
   return (
     <div className="bg-white rounded-lg p-4 overflow-auto select-none">
@@ -95,19 +101,13 @@ export default function TeamTimeBlocking({ event, availabilities }: Props) {
                     {time}
                   </td>
                   {dates.map((date) => {
-                    const utcKey = slotToUTC(date, time, event.timezone);
-                    const available = availabilities.filter((u) =>
-                      u.availability.includes(utcKey),
-                    );
-                    const unavailable = availabilities.filter(
-                      (u) => !u.availability.includes(utcKey),
-                    );
-                    const isAllAvailable = totalUsers > 0 && available.length === totalUsers;
-
+                    const utcKey = utcKeyMap.get(`${date}_${time}`)!;
+                    const available = availabilitySets.filter((u) => u.set.has(utcKey));
+                    const unavailable = availabilitySets.filter((u) => !u.set.has(utcKey));
                     return (
                       <td
                         key={date}
-                        className={`border border-gray-100 h-6 cursor-default transition-colors ${cellColor(available.length, totalUsers)} ${isAllAvailable ? "ring-1 ring-primary" : ""}`}
+                        className={`border border-gray-100 h-6 cursor-default transition-colors ${cellColor(available.length, totalUsers)}`}
                         onMouseEnter={(e) => {
                           if (totalUsers === 0) return;
                           setTooltip({
