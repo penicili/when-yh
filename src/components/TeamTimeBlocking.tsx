@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { DateTime } from "luxon";
 import type { Event } from "../types/EventType";
 
 type UserAvailability = {
@@ -37,26 +38,13 @@ function formatDate(iso: string): string {
 
 // Konversi slot (date ISO + "HH:mm" + timezone) ke UTC ISO string untuk perbandingan
 function slotToUTC(dateISO: string, time: string, timezone: string): string {
-  const [h, m] = time.split(":").map(Number);
-  const dateStr = new Date(dateISO).toLocaleDateString("en-CA", {
-    timeZone: timezone,
-  });
-  const asUTC = new Date(
-    `${dateStr}T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00Z`,
-  );
-  const inTz = new Date(asUTC.toLocaleString("en-US", { timeZone: timezone }));
-  const diff = asUTC.getTime() - inTz.getTime();
-  return new Date(asUTC.getTime() + diff).toISOString();
+  return DateTime.fromISO(`${dateISO}T${time}`, { zone: timezone }).toUTC().toISO()!;
 }
 
-// Warna cell berdasarkan berapa persen user yang available
 function cellColor(available: number, total: number): string {
   if (total === 0 || available === 0) return "bg-white";
   if (available === total) return "bg-primary";
-  const ratio = available / total;
-  if (ratio >= 0.75) return "bg-primary/75";
-  if (ratio >= 0.5) return "bg-primary/50";
-  return "bg-primary/25";
+  return "bg-primary/50";
 }
 
 export default function TeamTimeBlocking({ event, availabilities }: Props) {
@@ -67,6 +55,7 @@ export default function TeamTimeBlocking({ event, availabilities }: Props) {
     y: number;
   } | null>(null);
 
+  // Itung jumlah slot dan tanggal, pake useMemo biar gak re render
   const slots = useMemo(() => generateSlots(event.time_from, event.time_to), [event.time_from, event.time_to]);
   const dates = useMemo(() => [...event.dates].sort(), [event.dates]);
   const totalUsers = availabilities.length;
@@ -115,12 +104,10 @@ export default function TeamTimeBlocking({ event, availabilities }: Props) {
                     const utcKey = utcKeyMap.get(`${date}_${time}`)!;
                     const available = availabilitySets.filter((u) => u.set.has(utcKey));
                     const unavailable = availabilitySets.filter((u) => !u.set.has(utcKey));
-                    const isAllAvailable = totalUsers > 0 && available.length === totalUsers;
-
                     return (
                       <td
                         key={date}
-                        className={`border border-gray-100 h-6 cursor-default transition-colors ${cellColor(available.length, totalUsers)} ${isAllAvailable ? "ring-1 ring-primary" : ""}`}
+                        className={`border border-gray-100 h-6 cursor-default transition-colors ${cellColor(available.length, totalUsers)}`}
                         onMouseEnter={(e) => {
                           if (totalUsers === 0) return;
                           setTooltip({

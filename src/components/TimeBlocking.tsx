@@ -1,12 +1,15 @@
 import { useState, useRef } from "react";
 import type { Event } from "../types/EventType";
 import { submitUserAvailability } from "../services/availabilityService";
+import { DateTime } from "luxon";
 
 type Props = {
   event: Event | null;
   isSelectable: boolean;
   username: string;
   timezone: string;
+  initialBlocked?: Set<string>;
+  onAvailabilityChange?: (utcSlots: string[]) => void;
 };
 
 function generateSlots(from: string, to: string, interval = 30): string[] {
@@ -37,23 +40,25 @@ function formatDate(iso: string): string {
   });
 }
 
-export default function TimeBlocking({ event, username, timezone }: Props) {
-  // States buat time blocking
-  const [blocked, setBlocked] = useState<Set<string>>(new Set());
+export default function TimeBlocking({ event, username, timezone, initialBlocked, onAvailabilityChange }: Props) {
+  const [blocked, setBlocked] = useState<Set<string>>(() => initialBlocked ?? new Set());
   const isDragging = useRef(false);
   const dragValue = useRef(true);
 
   async function saveAvailability(current: Set<string>) {
     if (!event) return;
     const availability: { [date: string]: string[] } = {};
+    const utcSlots: string[] = [];
     for (const key of current) {
       const idx = key.lastIndexOf("_");
       const date = key.substring(0, idx);
       const time = key.substring(idx + 1);
       if (!availability[date]) availability[date] = [];
       availability[date].push(time);
+      utcSlots.push(DateTime.fromISO(`${date}T${time}`, { zone: timezone }).toUTC().toISO()!);
     }
     await submitUserAvailability({ eventId: event.id, username, timezone, availability });
+    onAvailabilityChange?.(utcSlots);
   }
 
   return (
